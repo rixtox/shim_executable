@@ -140,7 +140,7 @@ void ShowHelp() {
 named the same located elsewhere). Execute with --shim-NoOp to identify its
 target.
 
-Execute SHIM_EXEC -h or visit https://github.com/jphilbert/shim_executable for
+Execute SHIM_EXEC -h or visit https://github.com/rixtox/shim_executable for
 additional information.
 
 )V0G0N";
@@ -241,7 +241,7 @@ int ShimMain() {
     LOG() << "This is a shim for " << shimExe
           << " built with SHIM EXECUTABLE "
           << "(v" << VER_FILEVERSION_STR << ")";
-    LOG() << "See https://github.com/jphilbert/shim_executable "
+    LOG() << "See https://github.com/rixtox/shim_executable "
           << "for additional information";
     
     LOG();

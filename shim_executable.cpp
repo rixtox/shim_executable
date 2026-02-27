@@ -3,9 +3,9 @@
 // ------------------------------------------------------------------------- //
 /**@file    SHIM_EXECUTABLE.CPP
  * @brief   Main code for creating shims
- * @author  John P. Hilbert
- * @email   jphilbert@gmail.com
- * @date    2/6/2025
+ * @author  Rix | John P. Hilbert
+ * @email   m[at]rix.org | jphilbert@gmail.com
+ * @date    2/27/2026
  *
  * ------------------------------------------------------------------------- 
  * This program is free software: you can redistribute it and/or modify it
@@ -89,7 +89,7 @@ need to be created for the output stream, the shim instead writes to a
 .SHIM.LOG file with the same path.
 
 For additional information, execute the shim with --shim-help flag or visit
-https://github.com/jphilbert/shim_executable.
+https://github.com/rixtox/shim_executable.
 )V0G0N");
   cout << help_text << endl << endl;
 
