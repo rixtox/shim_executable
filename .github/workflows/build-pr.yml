@@ -11,17 +11,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Make
-        run: choco install make -y
-        shell: pwsh
-
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
       - name: Build
-        run: make
+        run: nmake
         shell: pwsh
 
       - name: Verify artifacts
