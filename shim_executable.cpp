@@ -211,6 +211,15 @@ will be assumed to be OUTPUT.
                             executable, thus these options likely would be need
                             only for special cases.
 
+    --wd-type TYPE      Working directory for the target: CMD (inherit current
+                            directory when shim is run), APP (target's
+                            directory), SHIM (shim's directory), or PATH (use
+                            --wd-path). Default: CMD for console shims, APP
+                            for GUI shims.
+
+    --wd-path PATH      When --wd-type is PATH, use this as the working
+                            directory. Ignored otherwise.
+
     --debug             Print additional information when creating the shim to
                             the console.
 )V0G0N";
@@ -248,6 +257,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
   wstring icon              = L"";
   wstring command_args      = L"";
   wstring shim_type         = L"";
+  wstring wd_type           = L"";
+  wstring wd_path           = L"";
   bool debug                = false;
 
   
@@ -279,6 +290,10 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
   //       --gui
   if(GetArgument(arg_list, L"--gui"))
     shim_type = L"GUI";
+
+  // Working directory type and path
+  GetArgument(arg_list, L"-(wd-type)", wd_type);
+  GetArgument(arg_list, L"-(wd-path)", wd_path);
   
   // Debug Info
   //       --debug
@@ -333,6 +348,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
   TrimQuotes(output);
   TrimQuotes(icon);
   TrimQuotes(command_args);
+  TrimQuotes(wd_type);
+  TrimQuotes(wd_path);
   command_args = UnquoteString(command_args);
 
   // Debug Info
@@ -346,6 +363,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
   LOG(4) << "icon:            " << icon;
   LOG(4) << "command_args:    " << command_args;
   LOG(4) << "shim_type:       " << shim_type;
+  LOG(4) << "wd_type:         " << wd_type;
+  LOG(4) << "wd_path:         " << wd_path;
   LOG(4) << "debug:           " << debug;
 
 
@@ -504,6 +523,17 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
     LOG(3)  << "SHIM TYPE: ";
     LOG(-3) << shim_type << " (manually selected)";
   }
+
+  // ---------- Working Directory ---------- //
+  if (wd_type.empty())
+    wd_type = (shim_type == L"CONSOLE") ? L"CMD" : L"APP";
+  UpperCase(wd_type);
+  if (wd_type != L"CMD" && wd_type != L"APP" && wd_type != L"SHIM" && wd_type != L"PATH") {
+    LOG(1) << "WD_TYPE must be CMD, APP, SHIM, or PATH (got '" << wd_type << "')";
+    return exitcode;
+  }
+  if (wd_type == L"PATH" && wd_path.empty())
+    LOG(2) << "WD_TYPE is PATH but WD_PATH is empty; shim will use shim directory";
   
   // ---------- Icon Path ---------- // 
   if (!icon.empty())
@@ -536,7 +566,10 @@ int wmain(int argc, wchar_t* argv[], wchar_t* envp[]) {
 
   // Add Shim Arguments
   AddResourceData(output_path, "SHIM_PATH", input_path);
-  AddResourceData(output_path, "SHIM_TYPE", shim_type);  
+  AddResourceData(output_path, "SHIM_TYPE", shim_type);
+  AddResourceData(output_path, "WD_TYPE", wd_type);
+  if (wd_type == L"PATH" && !wd_path.empty())
+    AddResourceData(output_path, "WD_PATH", wd_path);
   if (!command_args.empty()) 
     AddResourceData(output_path, "SHIM_ARGS", command_args);
 

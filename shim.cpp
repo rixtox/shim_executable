@@ -183,13 +183,14 @@ All other argument are passed to the parent executable.
                         effect as --shim-Exit and is kept for legacy purposes.
                         (alias --shimgen-gui)
 
-    --shim-UseTargetWorkingDirectory
-                    Set the working directory to the target path. By default
-                        the application will use the shim's path. Useful when
-                        programs need to be running from where they are located
-                        (usually indicates programs that have issues being run
-                        globally).
-                        (alias --shimgen-UseTargetWorkingDirectory)
+    --shim-WdType TYPE
+                    Override working directory type: CMD (current directory when
+                        shim is run), APP (target's directory), SHIM (shim's
+                        directory), or PATH (use directory from --shim-WdPath).
+
+    --shim-WdPath PATH
+                    Override working directory path. Used when type is PATH
+                        (from embedded config or --shim-WdType PATH).
 
     --shim-NoOp     Executes the shim without calling the target application.
                         Logging is implicitly turned on.
@@ -218,8 +219,12 @@ int ShimMain() {
   bool shimArgWait          = GetShimArg(arg_list, L"w");
   bool shimArgExit          = GetShimArg(arg_list, L"e");
   bool isWindowsApp         = GetShimArg(arg_list, L"g");
-  bool shimArgUseTarget     = GetShimArg(arg_list, L"u");
   bool shimArgNoop          = GetShimArg(arg_list, L"n");
+
+  wstring wdTypeOverride    = L"";
+  wstring wdPathOverride    = L"";
+  GetArgument(arg_list, L"--shim-wdtype", wdTypeOverride);
+  GetArgument(arg_list, L"--shim-wdpath", wdPathOverride);
 
   // If there still exists an argument starting with "--shim" and just run help 
   if(GetArgument(arg_list, L"--shim.*")) ShowHelp();
@@ -249,8 +254,11 @@ int ShimMain() {
     LOG() << "  Log:          " << shimArgLog  ; 
     LOG() << "  NoOp:         " << shimArgNoop ;
     LOG() << "  Exit:         " << shimArgExit ; 
-    LOG() << "  Wait:         " << shimArgWait ; 
-    LOG() << "  Use Target:   " << shimArgUseTarget;
+    LOG() << "  Wait:         " << shimArgWait ;
+    if (!wdTypeOverride.empty() || !wdPathOverride.empty()) {
+      LOG() << "  WdType over:  " << (wdTypeOverride.empty() ? L"<none>" : wdTypeOverride);
+      LOG() << "  WdPath over:  " << (wdPathOverride.empty() ? L"<none>" : wdPathOverride);
+    }
 
     if(calling_args.empty()) {
       LOG() << "  App Args:     "
@@ -299,6 +307,18 @@ int ShimMain() {
   GetResourceData("SHIM_ARGS", appArgs);
   GetResourceData("SHIM_TYPE", shimType);
 
+  wstring wdType = L"";
+  wstring wdPath = L"";
+  GetResourceData("WD_TYPE", wdType);
+  GetResourceData("WD_PATH", wdPath);
+
+  if (!wdTypeOverride.empty()) {
+    wdType = wdTypeOverride;
+    UpperCase(wdType);
+  }
+  if (!wdPathOverride.empty())
+    wdPath = wdPathOverride;
+
   // Here forward we'll just use shimArgWait
   if (shimType == L"CONSOLE")
     shimArgWait = !shimArgExit;
@@ -309,6 +329,8 @@ int ShimMain() {
     LOG() << "  Shim Type:    " << shimType; 
     LOG() << "  App Name:     " << filesystem::path(appPath).stem();
     LOG() << "  App Path:     " << "'" << appDir << "'";
+    if (!wdType.empty())
+      LOG() << "  WD Type:      " << wdType << (wdType == L"PATH" && !wdPath.empty() ? L" (" + wdPath + L")" : L"");
     if(appArgs.empty()) 
       LOG() << "  App Args:     " << "<NONE>";
     else 
@@ -337,7 +359,21 @@ int ShimMain() {
     appArgs += L" ";
   appArgs += calling_args;
 
-  wstring working_dir = shimArgUseTarget ? appDir : shimDir;
+  wstring working_dir;
+  if (!wdType.empty()) {
+    if (wdType == L"CMD")
+      working_dir = currDir;
+    else if (wdType == L"APP")
+      working_dir = appDir;
+    else if (wdType == L"SHIM")
+      working_dir = shimDir;
+    else if (wdType == L"PATH")
+      working_dir = wdPath.empty() ? shimDir : wdPath;
+    else
+      working_dir = shimDir;
+  } else {
+    working_dir = shimDir;
+  }
   
   
   

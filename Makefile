@@ -40,13 +40,14 @@ shim_executable.exe: $*.cpp $*.rc $(SHIMS)
 # --------------------------- Post Build Clean-Up ---------------------------- #
 cleanup: 
 	echo Removing intermediate files
-	rm *.obj
-	rm *.res
-	rm $(SHIMS)
+	-del *.obj
+	-del *.res
+	-del $(SHIMS)
 
 	echo Created checksum
-	checksum shim_executable.exe -t sha256 > shim_executable.sha256
+	powershell -NoProfile -Command "[System.IO.File]::WriteAllText('shim_executable.sha256', (Get-FileHash -Path shim_executable.exe -Algorithm SHA256).Hash.ToLower())"
 
 	echo Renamed and moved to .\bin
-	mv shim_executable.exe .\bin\shim_exec.exe
-	mv shim_executable.sha256 .\bin\shim_exec.sha256
+	if not exist .\bin mkdir .\bin
+	move /y shim_executable.exe .\bin\shim_exec.exe
+	move /y shim_executable.sha256 .\bin\shim_exec.sha256

@@ -29,7 +29,6 @@
 #include <string>
 #include <log.h>
 
-
 // ---------------------------- Read Resources ----------------------------- // 
 bool HasResourceData(LPCSTR name) {
   if (FindResource(NULL, name, RT_RCDATA)) 
@@ -103,8 +102,8 @@ BOOL AddResourceData (filesystem::path target, LPCSTR name, wstring arg) {
 // ---------------------------- Copy Resources ----------------------------- //
 HANDLE resource_handle;
 
-BOOL CALLBACK enumLangsFunc(HMODULE hModule, LPCTSTR lpType, LPCTSTR lpName,
-                   WORD wLang, LONG lParam) {
+BOOL CALLBACK enumLangsFunc(HMODULE hModule, LPCSTR lpType, LPCSTR lpName,
+                            WORD wLang, LONG_PTR lParam) {
     
   HRSRC hRes =          FindResourceEx(hModule, lpType, lpName, wLang);
   HGLOBAL hResLoad =    LoadResource(hModule, hRes);
@@ -134,16 +133,16 @@ BOOL CALLBACK enumLangsFunc(HMODULE hModule, LPCTSTR lpType, LPCTSTR lpName,
   return TRUE; 
 }
 
-BOOL CALLBACK enumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName,
-                   LONG lParam) {
-  EnumResourceLanguages(hModule, lpType, lpName, enumLangsFunc, 0);
+BOOL CALLBACK enumNamesFunc(HMODULE hModule, LPCSTR lpType, LPSTR lpName,
+                            LONG_PTR lParam) {
+  EnumResourceLanguagesA(hModule, lpType, lpName, enumLangsFunc, 0);
   return TRUE;
 }
 
-BOOL CALLBACK enumTypesFunc(HMODULE hModule, LPTSTR lpType, LONG lParam) {
+BOOL CALLBACK enumTypesFunc(HMODULE hModule, LPSTR lpType, LONG_PTR lParam) {
   // Only Copy Icons and Version Info
   if(lpType == RT_ICON || lpType == RT_VERSION || lpType == RT_GROUP_ICON)
-    EnumResourceNames(hModule, lpType, enumNamesFunc, 0);
+    EnumResourceNamesA(hModule, lpType, enumNamesFunc, 0);
   return TRUE;
 }
 
@@ -158,7 +157,7 @@ BOOL CopyResources(filesystem::path target, filesystem::path source) {
     return false;
   }
 
-  EnumResourceTypes(hExe, enumTypesFunc, 0);
+  EnumResourceTypesA(hExe, enumTypesFunc, 0);
 
   EndUpdateResource(resource_handle, FALSE);
   
@@ -168,8 +167,7 @@ BOOL CopyResources(filesystem::path target, filesystem::path source) {
   }
 
   return true;
-}  
-
+}
 
 // ------------------------------------------------------------------------- //
 #endif  /* RESOURCE_FUNCTIONS_H */

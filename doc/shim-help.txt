@@ -46,13 +46,14 @@ All other argument are passed to the parent executable.
                         effect as --shim-Exit and is kept for legacy purposes.
                         (alias --shimgen-gui)
 
-    --shim-UseTargetWorkingDirectory
-                    Set the working directory to the target path. By default
-                        the application will use the shim's path. Useful when
-                        programs need to be running from where they are located
-                        (usually indicates programs that have issues being run
-                        globally).
-                        (alias --shimgen-UseTargetWorkingDirectory)
+    --shim-WdType TYPE
+                    Override working directory type: CMD (current directory when
+                        shim is run), APP (target's directory), SHIM (shim's
+                        directory), or PATH (use directory from --shim-WdPath).
+
+    --shim-WdPath PATH
+                    Override working directory path. Used when type is PATH
+                        (from embedded config or --shim-WdType PATH).
 
     --shim-NoOp     Executes the shim without calling the target application.
                         Logging is implicitly turned on.

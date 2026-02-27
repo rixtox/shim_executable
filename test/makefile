@@ -12,4 +12,4 @@ gui_app.exe: $*.cpp
 
 cleanup: 
 	echo Removing intermediate files
-	rm *.obj
+	-del *.obj
