@@ -45,7 +45,7 @@ cleanup:
 	-del $(SHIMS)
 
 	echo Created checksum
-	powershell -NoProfile -Command "[System.IO.File]::WriteAllText('shim_executable.sha256', (Get-FileHash -Path shim_executable.exe -Algorithm SHA256).Hash.ToLower())"
+	powershell -NoProfile -Command "$$bytes=[System.IO.File]::ReadAllBytes('shim_executable.exe');$$h=[System.Security.Cryptography.SHA256]::Create().ComputeHash($$bytes);[System.IO.File]::WriteAllText('shim_executable.sha256',([BitConverter]::ToString($$h).Replace('-','').ToLower()))"
 
 	echo Renamed and moved to .\bin
 	if not exist .\bin mkdir .\bin
