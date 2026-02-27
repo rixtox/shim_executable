@@ -1,0 +1,31 @@
+name: Build (PR)
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Make
+        run: choco install make -y
+        shell: pwsh
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build
+        run: make
+        shell: pwsh
+
+      - name: Verify artifacts
+        run: |
+          if (-not (Test-Path bin\shim_exec.exe)) { throw "shim_exec.exe not found" }
+          if (-not (Test-Path bin\shim_exec.sha256)) { throw "shim_exec.sha256 not found" }
+        shell: pwsh
